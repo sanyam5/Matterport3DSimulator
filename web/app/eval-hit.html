@@ -45,6 +45,15 @@
 
 <p><i>(Left-click and drag the panoramic image to start. Don&#39;t submit until you reach the goal. Must read full instructions at top.)</i></p>
 <input id="traj" name="traj" type="hidden" value="" /></div>
+    <input id="stream_id" name="stream_id" type="hidden" value="" /></div>
+    <input id="path_id" name="path_id" type="hidden" value="" /></div>
+
+    <button id="load_prev_traj_btn"> Load Prev Traj </button>
+    <button id="save_traj_btn"> Save Traj to File </button>
+    <button id="load_next_traj_btn"> Load Next Traj </button>
+    <button id="reload_traj_btn"> Reload Traj </button>
+    <button id="clear_traj_btn"> Clear Traj </button>
+
 </div>
 </section>
 <!-- End Image Tagging Layout --><!-- Open internal style sheet -->
@@ -112,15 +121,144 @@ var ASPECT = SIZE_X/SIZE_Y;
 var path;
 
 var matt = new Matterport3D("");
-matt.loadJson('/R2Rdata/R2R_test.json').then(function(data){
-  task = data[ix.toString()];
-  scan = task['scan'];
-  curr_image_id = task['path'][0]
-  instructions = task['instructions'][0]
-  $('#instr').text(instructions);
-  skybox_init();
-  load_connections(scan, curr_image_id);
+skybox_init();
+
+var split = "train";
+var r2r_indices = [
+    {
+        stream: "gt",
+        index: "1",
+    }, {
+        stream: "gen",
+        index: "20",
+    },
+    {
+        stream: "gen",
+        index: "1",
+    },
+];
+
+var cur_index = 0;
+
+var r2r_data = {
+    "gt": null,
+    "gen": null,
+};
+
+matt.loadJson('/R2Rdata/R2R_'+split+'_gt.json').then(function(gt_data){
+    r2r_data["gt"] = gt_data;
+
+    matt.loadJson('/R2Rdata/R2R_'+split+'_gen.json').then(function(gen_data){
+        r2r_data["gen"] = gen_data;
+        my_load_path_scene();
+    });
 });
+
+
+
+function my_load_path_scene() {
+
+    if($('#traj').val() !== ""){
+        alert("traj is not empty! this should not have happened. The system maybe in inconsistent state. manual intervention maybe required.");
+        return
+    }
+
+    var ind = r2r_indices[cur_index]["index"];
+    var stream = r2r_indices[cur_index]["stream"];
+
+    task = r2r_data[stream][ind.toString()];
+
+
+    alert("loading scene at the selected index = " + cur_index +
+        " and r2r index = " + ind + " with path_id = " + task['path_id'] + " taking from stream " + stream);
+
+    scan = task['scan'];
+    curr_image_id = task['path'][0];
+    instructions = task['instructions'][0];
+    $('#instr').text(instructions);
+    $('#path_id').val(task['path_id']);
+    $('#stream_id').val(stream);
+    $('#save_traj_btn').text("Save Traj for ("+cur_index+", "+ind+", "+task["path_id"]+") to File");
+
+    load_connections(scan, curr_image_id);
+}
+
+function my_load_prev_traj() {
+
+    if($('#traj').val() !== ""){
+        alert("cannot load prev scene the traj is not empty");
+        return
+    }
+
+    if(cur_index === 0) {
+        alert("sorry bro, can't decrement, already at 0");
+        return
+    }
+    cur_index  = cur_index  - 1;
+    my_load_path_scene();
+}
+
+function my_load_next_traj() {
+
+    if($('#traj').val() !== ""){
+        alert("cannot load next scene the traj is not empty");
+        return
+    }
+
+    if(cur_index === r2r_indices.length - 1){
+        alert("sorry bro, can't increment, already at max index");
+        return;
+    }
+    cur_index  = cur_index  + 1;
+    my_load_path_scene();
+}
+
+$("#load_prev_traj_btn").click(my_load_prev_traj);
+$("#load_next_traj_btn").click(my_load_next_traj);
+
+
+function send_traj_for_saving() {
+
+    alert("sending " + $('#stream_id').val() + $('#path_id').val());
+
+    $.post( "http://0.0.0.0:5000/traj_dump/", {
+        stream_id: $('#stream_id').val(),
+        path_id: $('#path_id').val(),
+        traj: $('#traj').val(),
+    },
+
+        function (data) {
+            if(data.slice(0,7) === "Success") {
+                alert("Sucess detected. Clearing Traj");
+                clear_traj_history();
+                alert("Looks like we cleared traj: '" + $('#traj').val() + "'");
+            }
+            else if (data.slice(0,5) === "Error"){
+                alert("error detected");
+                alert("flask says..  " + data);
+            }
+            else {
+                alert("what the hell is " + data);
+            }
+        }
+    );
+}
+
+$('#save_traj_btn').click(send_traj_for_saving);
+
+function clear_traj_history() {
+    $('#traj').val('');
+}
+
+
+function reload_scene() {
+    clear_traj_history();
+    my_load_path_scene();
+}
+
+$('#reload_traj_btn').click(reload_scene);
+$('#clear_traj_btn').click(clear_traj_history);
+
 
 // ## Initialize everything
 function skybox_init(scan, image) {
