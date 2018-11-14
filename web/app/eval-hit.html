@@ -47,12 +47,14 @@
 <input id="traj" name="traj" type="hidden" value="" /></div>
     <input id="stream_id" name="stream_id" type="hidden" value="" /></div>
     <input id="path_id" name="path_id" type="hidden" value="" /></div>
+    <input id="init_heading" name="init_heading" type="hidden" value="" /></div>
 
     <button id="load_prev_traj_btn"> Load Prev Traj </button>
     <button id="save_traj_btn"> Save Traj to File </button>
     <button id="load_next_traj_btn"> Load Next Traj </button>
     <button id="reload_traj_btn"> Reload Traj </button>
     <button id="clear_traj_btn"> Clear Traj </button>
+    <button id="check_heading_btn"> Check Heading </button>
 
 </div>
 </section>
@@ -121,42 +123,65 @@ var ASPECT = SIZE_X/SIZE_Y;
 var path;
 
 var matt = new Matterport3D("");
-skybox_init();
 
 var split = "train";
 var r2r_indices = [
+    // {
+    //     stream: "gt",
+    //     index: "0",
+    // },    {
+    //     stream: "gt",
+    //     index: "1",
+    // },
     {
         stream: "gt",
+        index: "2",
+    },     {
+        stream: "gt",
         index: "1",
-    }, {
-        stream: "gen",
+    },     {
+        stream: "gt",
+        index: "0",
+    },     {
+        stream: "gt",
+        index: "6",
+    },
+
+    {
+        stream: "theirs",
         index: "20",
     },
     {
-        stream: "gen",
+        stream: "ours",
         index: "1",
     },
 ];
 
 var cur_index = 0;
-
 var r2r_data = {
     "gt": null,
-    "gen": null,
+    "theirs": null,
+    "ours": null
 };
 
 matt.loadJson('/R2Rdata/R2R_'+split+'_gt.json').then(function(gt_data){
     r2r_data["gt"] = gt_data;
 
-    matt.loadJson('/R2Rdata/R2R_'+split+'_gen.json').then(function(gen_data){
-        r2r_data["gen"] = gen_data;
-        my_load_path_scene();
+    matt.loadJson('/R2Rdata/R2R_'+split+'_theirs.json').then(function(theirs_data){
+        r2r_data["theirs"] = theirs_data;
+
+        matt.loadJson('/R2Rdata/R2R_'+split+'_ours.json').then(function(ours_data){
+            r2r_data["ours"] = ours_data;
+            my_load_path_scene();
+        });
     });
 });
 
 
 
 function my_load_path_scene() {
+
+    skybox_init();
 
     if($('#traj').val() !== ""){
         alert("traj is not empty! this should not have happened. The system maybe in inconsistent state. manual intervention maybe required.");
@@ -177,6 +202,7 @@ function my_load_path_scene() {
     instructions = task['instructions'][0];
     $('#instr').text(instructions);
     $('#path_id').val(task['path_id']);
+    $('#init_heading').val(task['heading']);
     $('#stream_id').val(stream);
     $('#save_traj_btn').text("Save Traj for ("+cur_index+", "+ind+", "+task["path_id"]+") to File");
 
@@ -253,12 +279,33 @@ function clear_traj_history() {
 
 function reload_scene() {
     clear_traj_history();
+    last_pose = null;
     my_load_path_scene();
 }
 
 $('#reload_traj_btn').click(reload_scene);
 $('#clear_traj_btn').click(clear_traj_history);
 
+
+function my_check_heading() {
+    var init_heading = $('#init_heading').val();
+
+    var m = get_camera_pose();
+
+    // calculate heading
+    var rot = new THREE.Matrix3();
+    rot.setFromMatrix4(m);
+    var cam_look = new THREE.Vector3(0,0,1); // based on matterport camera
+    cam_look.applyMatrix3(rot);
+    var heading = Math.PI/2.0 -Math.atan2(cam_look.y, cam_look.x);
+    if (heading < 0) {
+        heading += 2.0*Math.PI;
+    }
+
+    alert("initial heading is supposed to be " + init_heading + " while current heading is " + heading);
+}
+
+$('#check_heading_btn').click(my_check_heading);
 
 // ## Initialize everything
 function skybox_init(scan, image) {
@@ -353,6 +400,7 @@ function cube_urls(scan, image_id) {
 
 function move_to(image_id, isInitial=false) {
   // Adjust cylinder visibility
+    alert("moving to " + image_id);
   var cylinders = cylinder_frame.children;
   for (var i = 0; i < cylinders.length; ++i){
     cylinders[i].visible = connections[id_to_ix[image_id]]['unobstructed'][i];

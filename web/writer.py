@@ -21,7 +21,10 @@ def login_page():
         path_id = request.form['path_id']
         traj = request.form['traj']
 
-        assert traj[:2] == ",("
+        print("pehle stream, path, traj is .. ", stream_id, path_id, traj)
+
+
+        assert traj[:2] == ",(", "the traj is {}".format(traj)
         traj = "["+traj[1:]+"]"
 
         print("stream, path, traj is .. ", stream_id, path_id, traj)
