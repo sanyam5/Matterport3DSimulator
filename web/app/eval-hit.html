@@ -47,6 +47,7 @@
 <input id="traj" name="traj" type="hidden" value="" /></div>
     <input id="stream_id" name="stream_id" type="hidden" value="" /></div>
     <input id="path_id" name="path_id" type="hidden" value="" /></div>
+    <input id="instr_id" name="instr_id" type="hidden" value="" /></div>
     <input id="init_heading" name="init_heading" type="hidden" value="" /></div>
 
     <button id="load_prev_traj_btn"> Load Prev Traj </button>
@@ -124,59 +125,177 @@ var path;
 
 var matt = new Matterport3D("");
 
-var split = "train";
-var r2r_indices = [
-    // {
-    //     stream: "gt",
-    //     index: "0",
-    // },    {
-    //     stream: "gt",
-    //     index: "1",
-    // },
-    {
-        stream: "gt",
-        index: "2",
-    },     {
-        stream: "gt",
-        index: "1",
-    },     {
-        stream: "gt",
-        index: "0",
-    },     {
-        stream: "gt",
-        index: "6",
-    },
+var split = "val_unseen";
+var r2r_indices = [{'stream': 'ours', 'instr_id': '64_0'},
+ {'stream': 'gt', 'instr_id': '312_0'},
+ {'stream': 'ours', 'instr_id': '101_0'},
+ {'stream': 'gt', 'instr_id': '128_0'},
+ {'stream': 'ours', 'instr_id': '329_0'},
+ {'stream': 'gt', 'instr_id': '329_0'},
+ {'stream': 'gt', 'instr_id': '295_0'},
+ {'stream': 'gt', 'instr_id': '101_0'},
+ {'stream': 'gt', 'instr_id': '433_0'},
+ {'stream': 'theirs', 'instr_id': '175_0'},
+ {'stream': 'ours', 'instr_id': '412_0'},
+ {'stream': 'gt', 'instr_id': '321_0'},
+ {'stream': 'ours', 'instr_id': '128_0'},
+ {'stream': 'ours', 'instr_id': '239_0'},
+ {'stream': 'theirs', 'instr_id': '227_0'},
+ {'stream': 'theirs', 'instr_id': '214_0'},
+ {'stream': 'ours', 'instr_id': '270_0'},
+ {'stream': 'ours', 'instr_id': '431_0'},
+ {'stream': 'theirs', 'instr_id': '21_0'},
+ {'stream': 'theirs', 'instr_id': '155_0'},
+ {'stream': 'ours', 'instr_id': '254_0'},
+ {'stream': 'theirs', 'instr_id': '62_0'},
+ {'stream': 'gt', 'instr_id': '237_0'},
+ {'stream': 'theirs', 'instr_id': '412_0'},
+ {'stream': 'ours', 'instr_id': '15_0'},
+ {'stream': 'gt', 'instr_id': '132_0'},
+ {'stream': 'theirs', 'instr_id': '342_0'},
+ {'stream': 'ours', 'instr_id': '132_0'},
+ {'stream': 'theirs', 'instr_id': '285_0'},
+ {'stream': 'theirs', 'instr_id': '208_0'},
+ {'stream': 'gt', 'instr_id': '478_0'},
+ {'stream': 'ours', 'instr_id': '214_0'},
+ {'stream': 'theirs', 'instr_id': '57_0'},
+ {'stream': 'gt', 'instr_id': '227_0'},
+ {'stream': 'ours', 'instr_id': '267_0'},
+ {'stream': 'gt', 'instr_id': '17_0'},
+ {'stream': 'gt', 'instr_id': '307_0'},
+ {'stream': 'theirs', 'instr_id': '477_0'},
+ {'stream': 'theirs', 'instr_id': '42_0'},
+ {'stream': 'theirs', 'instr_id': '277_0'},
+ {'stream': 'theirs', 'instr_id': '264_0'},
+ {'stream': 'ours', 'instr_id': '129_0'},
+ {'stream': 'theirs', 'instr_id': '237_0'},
+ {'stream': 'theirs', 'instr_id': '138_0'},
+ {'stream': 'gt', 'instr_id': '173_0'},
+ {'stream': 'ours', 'instr_id': '433_0'},
+ {'stream': 'gt', 'instr_id': '267_0'},
+ {'stream': 'theirs', 'instr_id': '384_0'},
+ {'stream': 'gt', 'instr_id': '208_0'},
+ {'stream': 'ours', 'instr_id': '227_0'},
+ {'stream': 'ours', 'instr_id': '312_0'},
+ {'stream': 'theirs', 'instr_id': '300_0'},
+ {'stream': 'theirs', 'instr_id': '260_0'},
+ {'stream': 'theirs', 'instr_id': '161_0'},
+ {'stream': 'theirs', 'instr_id': '294_0'},
+ {'stream': 'gt', 'instr_id': '285_0'},
+ {'stream': 'ours', 'instr_id': '175_0'},
+ {'stream': 'gt', 'instr_id': '477_0'},
+ {'stream': 'theirs', 'instr_id': '267_0'},
+ {'stream': 'theirs', 'instr_id': '122_0'},
+ {'stream': 'gt', 'instr_id': '342_0'},
+ {'stream': 'theirs', 'instr_id': '374_0'},
+ {'stream': 'ours', 'instr_id': '57_0'},
+ {'stream': 'theirs', 'instr_id': '478_0'},
+ {'stream': 'gt', 'instr_id': '138_0'},
+ {'stream': 'ours', 'instr_id': '285_0'},
+ {'stream': 'ours', 'instr_id': '21_0'},
+ {'stream': 'ours', 'instr_id': '104_0'},
+ {'stream': 'ours', 'instr_id': '294_0'},
+ {'stream': 'gt', 'instr_id': '184_0'},
+ {'stream': 'ours', 'instr_id': '260_0'},
+ {'stream': 'gt', 'instr_id': '153_0'},
+ {'stream': 'gt', 'instr_id': '277_0'},
+ {'stream': 'theirs', 'instr_id': '295_0'},
+ {'stream': 'gt', 'instr_id': '104_0'},
+ {'stream': 'ours', 'instr_id': '300_0'},
+ {'stream': 'ours', 'instr_id': '153_0'},
+ {'stream': 'gt', 'instr_id': '431_0'},
+ {'stream': 'theirs', 'instr_id': '431_0'},
+ {'stream': 'ours', 'instr_id': '17_0'},
+ {'stream': 'theirs', 'instr_id': '184_0'},
+ {'stream': 'theirs', 'instr_id': '312_0'},
+ {'stream': 'ours', 'instr_id': '407_0'},
+ {'stream': 'gt', 'instr_id': '21_0'},
+ {'stream': 'gt', 'instr_id': '270_0'},
+ {'stream': 'gt', 'instr_id': '264_0'},
+ {'stream': 'gt', 'instr_id': '15_0'},
+ {'stream': 'gt', 'instr_id': '162_0'},
+ {'stream': 'theirs', 'instr_id': '329_0'},
+ {'stream': 'theirs', 'instr_id': '270_0'},
+ {'stream': 'gt', 'instr_id': '214_0'},
+ {'stream': 'theirs', 'instr_id': '407_0'},
+ {'stream': 'ours', 'instr_id': '477_0'},
+ {'stream': 'gt', 'instr_id': '300_0'},
+ {'stream': 'ours', 'instr_id': '237_0'},
+ {'stream': 'gt', 'instr_id': '129_0'},
+ {'stream': 'gt', 'instr_id': '155_0'},
+ {'stream': 'theirs', 'instr_id': '101_0'},
+ {'stream': 'ours', 'instr_id': '122_0'},
+ {'stream': 'gt', 'instr_id': '175_0'},
+ {'stream': 'gt', 'instr_id': '161_0'},
+ {'stream': 'gt', 'instr_id': '57_0'},
+ {'stream': 'theirs', 'instr_id': '280_0'},
+ {'stream': 'theirs', 'instr_id': '132_0'},
+ {'stream': 'ours', 'instr_id': '295_0'},
+ {'stream': 'gt', 'instr_id': '122_0'},
+ {'stream': 'gt', 'instr_id': '64_0'},
+ {'stream': 'theirs', 'instr_id': '173_0'},
+ {'stream': 'ours', 'instr_id': '478_0'},
+ {'stream': 'ours', 'instr_id': '42_0'},
+ {'stream': 'gt', 'instr_id': '260_0'},
+ {'stream': 'gt', 'instr_id': '280_0'},
+ {'stream': 'theirs', 'instr_id': '15_0'},
+ {'stream': 'theirs', 'instr_id': '239_0'},
+ {'stream': 'ours', 'instr_id': '184_0'},
+ {'stream': 'theirs', 'instr_id': '128_0'},
+ {'stream': 'gt', 'instr_id': '384_0'},
+ {'stream': 'ours', 'instr_id': '161_0'},
+ {'stream': 'ours', 'instr_id': '208_0'},
+ {'stream': 'ours', 'instr_id': '307_0'},
+ {'stream': 'ours', 'instr_id': '264_0'},
+ {'stream': 'theirs', 'instr_id': '321_0'},
+ {'stream': 'gt', 'instr_id': '412_0'},
+ {'stream': 'ours', 'instr_id': '173_0'},
+ {'stream': 'theirs', 'instr_id': '307_0'},
+ {'stream': 'ours', 'instr_id': '321_0'},
+ {'stream': 'gt', 'instr_id': '294_0'},
+ {'stream': 'theirs', 'instr_id': '254_0'},
+ {'stream': 'gt', 'instr_id': '62_0'},
+ {'stream': 'theirs', 'instr_id': '104_0'},
+ {'stream': 'theirs', 'instr_id': '153_0'},
+ {'stream': 'ours', 'instr_id': '280_0'},
+ {'stream': 'theirs', 'instr_id': '433_0'},
+ {'stream': 'ours', 'instr_id': '138_0'},
+ {'stream': 'gt', 'instr_id': '407_0'},
+ {'stream': 'theirs', 'instr_id': '129_0'},
+ {'stream': 'gt', 'instr_id': '42_0'},
+ {'stream': 'ours', 'instr_id': '62_0'},
+ {'stream': 'ours', 'instr_id': '277_0'},
+ {'stream': 'ours', 'instr_id': '162_0'},
+ {'stream': 'theirs', 'instr_id': '17_0'},
+ {'stream': 'ours', 'instr_id': '384_0'},
+ {'stream': 'ours', 'instr_id': '342_0'},
+ {'stream': 'gt', 'instr_id': '239_0'},
+ {'stream': 'ours', 'instr_id': '374_0'},
+ {'stream': 'gt', 'instr_id': '374_0'},
+ {'stream': 'theirs', 'instr_id': '162_0'},
+ {'stream': 'gt', 'instr_id': '254_0'},
+ {'stream': 'ours', 'instr_id': '155_0'},
+ {'stream': 'theirs', 'instr_id': '64_0'}];
 
-    {
-        stream: "theirs",
-        index: "20",
-    },
-    {
-        stream: "ours",
-        index: "1",
-    },
-];
-
-var cur_index = 0;
+var cur_index = 34;
 var r2r_data = {
     "gt": null,
     "theirs": null,
     "ours": null
 };
 
-matt.loadJson('/R2Rdata/R2R_'+split+'_gt.json').then(function(gt_data){
+matt.loadJson('/R2Rdata/'+split+'_gt.json').then(function(gt_data){
     r2r_data["gt"] = gt_data;
 
-    matt.loadJson('/R2Rdata/R2R_'+split+'_theirs.json').then(function(theirs_data){
+    matt.loadJson('/R2Rdata/'+split+'_theirs.json').then(function(theirs_data){
         r2r_data["theirs"] = theirs_data;
 
-        matt.loadJson('/R2Rdata/R2R_'+split+'_ours.json').then(function(ours_data){
+        matt.loadJson('/R2Rdata/'+split+'_ours.json').then(function(ours_data){
             r2r_data["ours"] = ours_data;
             my_load_path_scene();
         });
     });
 });
-
 
 
 function my_load_path_scene() {
@@ -188,23 +307,27 @@ function my_load_path_scene() {
         return
     }
 
-    var ind = r2r_indices[cur_index]["index"];
+    var instr_id = r2r_indices[cur_index]["instr_id"];
     var stream = r2r_indices[cur_index]["stream"];
 
-    task = r2r_data[stream][ind.toString()];
+    // alert(ind + " " + stream);
 
+    task = r2r_data[stream][instr_id];
 
-    alert("loading scene at the selected index = " + cur_index +
-        " and r2r index = " + ind + " with path_id = " + task['path_id'] + " taking from stream " + stream);
+    // alert(task);
+
+    console.log("loading scene at the selected index = " + cur_index +
+        " and r2r index = " + instr_id + " with path_id = " + task['path_id'] + " taking from stream " + stream);
 
     scan = task['scan'];
     curr_image_id = task['path'][0];
     instructions = task['instructions'][0];
     $('#instr').text(instructions);
     $('#path_id').val(task['path_id']);
+    $('#instr_id').val(instr_id);
     $('#init_heading').val(task['heading']);
     $('#stream_id').val(stream);
-    $('#save_traj_btn').text("Save Traj for ("+cur_index+", "+ind+", "+task["path_id"]+") to File");
+    $('#save_traj_btn').text("Save Traj for ("+cur_index+", "+instr_id+", "+task["path_id"]+") to File");
 
     load_connections(scan, curr_image_id);
 }
@@ -226,10 +349,11 @@ function my_load_prev_traj() {
 
 function my_load_next_traj() {
 
-    if($('#traj').val() !== ""){
-        alert("cannot load next scene the traj is not empty");
-        return
-    }
+    // if($('#traj').val() !== ""){
+    //     alert("cannot load next scene the traj is not empty");
+    //     return
+    // }
+    $('#traj').val('');
 
     if(cur_index === r2r_indices.length - 1){
         alert("sorry bro, can't increment, already at max index");
@@ -245,19 +369,27 @@ $("#load_next_traj_btn").click(my_load_next_traj);
 
 function send_traj_for_saving() {
 
-    alert("sending " + $('#stream_id').val() + $('#path_id').val());
+    console.log("sending " + $('#stream_id').val() + $('#path_id').val());
+    console.log("traj is " + $('#traj').val());
+    console.log("sending now.. " + $('#stream_id').val() + $('#path_id').val());
 
     $.post( "http://0.0.0.0:5000/traj_dump/", {
         stream_id: $('#stream_id').val(),
+        split: split,
         path_id: $('#path_id').val(),
+        instr_id: $('#instr_id').val(),
+        instr: $('#instr').text(),
         traj: $('#traj').val(),
     },
 
         function (data) {
             if(data.slice(0,7) === "Success") {
-                alert("Sucess detected. Clearing Traj");
+                console.log("Sucess detected. Clearing Traj");
                 clear_traj_history();
-                alert("Looks like we cleared traj: '" + $('#traj').val() + "'");
+                console.log("Looks like we cleared traj: '" + $('#traj').val() + "'");
+                console.log("Loading next..");
+                my_load_next_traj();
+                console.log("we may have loaded the new trajectory")
             }
             else if (data.slice(0,5) === "Error"){
                 alert("error detected");
@@ -400,7 +532,7 @@ function cube_urls(scan, image_id) {
 
 function move_to(image_id, isInitial=false) {
   // Adjust cylinder visibility
-    alert("moving to " + image_id);
+    console.log("moving to " + image_id);
   var cylinders = cylinder_frame.children;
   for (var i = 0; i < cylinders.length; ++i){
     cylinders[i].visible = connections[id_to_ix[image_id]]['unobstructed'][i];

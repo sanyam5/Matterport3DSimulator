@@ -18,21 +18,27 @@ def login_page():
     try:
         # raise Exception("arrey bhai wait")
         stream_id = request.form['stream_id']
-        path_id = request.form['path_id']
+        instr_id = request.form['instr_id']
         traj = request.form['traj']
-
-        print("pehle stream, path, traj is .. ", stream_id, path_id, traj)
-
+        split = request.form['split']
+        instr = request.form['instr']
 
         assert traj[:2] == ",(", "the traj is {}".format(traj)
         traj = "["+traj[1:]+"]"
 
-        print("stream, path, traj is .. ", stream_id, path_id, traj)
+        print("stream, path, traj, split, instr is .. ", stream_id, instr_id, traj, split, instr)
+
+        fname = "hits/{}_{}_{}.hit".format(split, stream_id, instr_id)
+
+        with open(fname, "a") as f:
+            f.write("\n\n")
+            f.write(traj + "\n")
+            f.write(instr + "\n")
+
         return "Success: Saved the traj!"
     except Exception as e:
         error = "Error: while saving the traj into file: '{}'".format(str(e))
-        raise
-        return error
+        raise Exception(error)
 
 
 if __name__ == '__main__':
